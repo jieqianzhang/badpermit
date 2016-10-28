@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <style>
+    html,
+    body,
+    #map {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    
+    div#searchbox {
+        background-color: #d2eaef;
+        opacity: .9;
+        position: absolute;
+        top: 75px;
+        right: 100px;
+        width: auto;
+        height: auto;
+        padding: 10px;
+        display: block;
+        z-index: 9000;
+    }
+    
+    div#searchbox input {
+        width: 200px;
+    }
+    
+    div#results {
+        background: #FFF;
+    }
+    
+    .title {
+        position: absolute;
+        left: 10%;
+        bottom: 20%;
+        z-index: 9999;
+        color: white;
+        font-family: "Helvetica";
+    }
+    
+    .subtitle {
+        width: 60%;
+        font-weight: 300;
+        line-height: 20px;
+    }
+    </style>
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+</head>
+
+<body>
+    <div class="title">
+        <h1>Bad Permits</h1>
+        <h4 class="subtitle">These are the building permits built on critically eroded land by Vanderbilt Beach in Naples. Drag around the coast to find the bad permits in your neighborhood. Hover over each permit for building details. </h4>
+    </div>
+    <div id="map"></div>
+    <div id="searchbox">
+        <input type="text" name="ad" value="" id="ad" size="10" />
+        <button type="button" id="searchButton">Search</button>
+        <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+        <script>
+        var layer;
+        var input;
+        var map;
+
+        function main() {
+
+            var map = L.map('map', {
+                zoomControl: true,
+                center: [26.4389358290448, -81.9354701916718],
+                zoom: 15
+            });
+            L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="http://cartodb.com/attributions">CartoDB</a>'
+            }).addTo(map);
+
+            cartodb.createLayer(map, 'https://bmm80.carto.com/api/v2/viz/1b9d92fc-7d6e-4d2d-818b-3682b431a9a3/viz.json').addTo(map)
+                .done(function() {
+                    $('#searchButton').click(function() {
+                        input = $("#ad").val();
+                        input = titleCase(input)
+                        console.log(input);
+                        var sql = new cartodb.SQL({
+                            user: 'bmm80'
+                        });
+                        sql.getBounds("SELECT * FROM beaches_sept_buffer where county ILIKE '" + input +
+                            "'").done(function(bounds) {
+                            map.fitBounds(bounds)
+                        });
+
+                    });
+                });
+        }
+
+        function titleCase(str) {
+            var newstr = str.split(" ");
+            for (i = 0; i < newstr.length; i++) {
+                if (newstr[i] == "") continue;
+                var copy = newstr[i].substring(1).toLowerCase();
+                newstr[i] = newstr[i][0].toUpperCase() + copy;
+            }
+            newstr = newstr.join(" ");
+            return newstr;
+        }
+
+        window.onload = main;
+        </script>
+</body>
+
+</html>
