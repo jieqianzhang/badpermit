@@ -63,6 +63,7 @@
         <input type="text" name="ad" value="" id="ad" size="10" />
         <button type="button" id="searchButton">Search</button>
         <script src="js/cartodb.js"></script>
+        <script src="js/jquery-3.1.1.min.js"></script>
         <script>
         var layer;
         var input;
@@ -90,6 +91,7 @@
                         });
                         sql.getBounds("SELECT * FROM beaches_sept_buffer where county ILIKE '" + input +
                             "'").done(function(bounds) {
+                            $(".title").fadeTo('slow', 0);
                             map.fitBounds(bounds)
                         });
 
@@ -107,6 +109,20 @@
             newstr = newstr.join(" ");
             return newstr;
         }
+
+        // fade when the map is dragged/double clicked
+        var isClicked = false; 
+        var isDragging = false;
+        $('#map').mousedown(function() {
+            isClicked = true;
+        }).mousemove(function() {
+            isDragging = true;
+            if (isClicked == isDragging){
+                $(".title").fadeTo('slow', 0);
+            }
+        }).dblclick(function(){
+            $(".title").fadeTo('slow', 0);
+        });
 
         window.onload = main;
         </script>
